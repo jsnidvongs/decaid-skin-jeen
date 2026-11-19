@@ -48,7 +48,7 @@ function rowsFor(g) {
       row('Steam flow', `${fmt.n(m.steamFlow)} ml/s`, stepper('steamFlow', '', 'Less', 'More').replace('<span></span>', '')),
       row('Flush flow, temperature, time', `${fmt.n(m.flushFlow)} ml/s · ${m.flushTemp != null ? m.flushTemp + '°' : '–'} · ${m.flushTimeout != null ? m.flushTimeout + ' s' : '–'}`),
       row('Water tank heater', m.tankTemp ? `${m.tankTemp}°` : 'Off', sw('tank', !!m.tankTemp, 'Water tank heater')),
-      row('Warn when water is below', D.water ? `${D.water.refillLevel} mm` : '–', stepper('refill', '', 'Lower', 'Higher').replace('<span></span>', '')),
+      row('Machine asks for a refill at', D.water ? `${D.water.refillLevel} mm` : '–', stepper('refill', '', 'Lower', 'Higher').replace('<span></span>', '')),
     ];
     case 'Scale': return [
       row('Decent Scale', S.scale.connected ? `Connected${S.scale.battery != null ? ' · battery ' + S.scale.battery + '%' : ''}` : 'Not connected', S.scale.connected ? btn('tare', 'Tare') : btn('scan', 'Find')),

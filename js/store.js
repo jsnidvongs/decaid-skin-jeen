@@ -36,10 +36,13 @@ export function waterPct() {
   if (!S.water || S.water.currentLevel == null) return null;
   return Math.max(0, Math.min(100, Math.round((S.water.currentLevel / WATER_FULL_MM) * 100)));
 }
+// The skin warns at this level (Jeen's choice), or at the machine's own refill level if that is higher.
+export const REFILL_ALERT_MM = 8;
+
 export function waterLow() {
   if (machineState() === 'needsWater') return true;
   if (!S.water || S.water.currentLevel == null) return false;
-  return S.water.currentLevel <= (S.water.refillLevel || 0) + 2;
+  return S.water.currentLevel <= Math.max(REFILL_ALERT_MM, S.water.refillLevel || 0);
 }
 export function heating() {
   const st = machineState();
