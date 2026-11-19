@@ -85,7 +85,7 @@ export default {
     const eyebrow = [!sel ? '' : sel.isDefault ? 'Decent' : 'Own', ...TAGS.filter(([k]) => tags.includes(k)).map(([, l2]) => l2.replace(/s$/, ''))].filter(Boolean).join(' · ');
     const filters = [['all', 'All'], ['favourite', 'Favourites'], ['own', 'Own'], ['modern', 'Modern'], ['classic', 'Classic']];
     return `
-      <div class="head"><h2 class="h2">Profiles</h2><button type="button" class="line${searching ? ' line-on' : ''}" data-act="search">${searching ? 'Close search' : 'Search'}</button></div>
+      <div class="head"><h2 class="h2">Profiles</h2><nav class="acts" aria-label="Profile list actions"><button type="button" class="line${searching ? ' line-on' : ''}" data-act="search">${searching ? 'Close' : 'Search'}</button><button type="button" class="line line-on" data-act="new">New</button></nav></div>
       <div class="head"><div style="min-width:0"><span class="eyebrow">${esc(eyebrow)}</span><h1 class="h1">${esc(p ? p.title : 'No profiles yet')}</h1></div><p class="note-r">${esc(p && p.notes ? p.notes.slice(0, 150) : '')}</p></div>
       ${searching
         ? `<div class="row2" style="align-items:flex-end"><label class="fld" style="width:100%"><span class="eyebrow">Search by name or author</span><input data-in="q" value="${esc(query)}" autofocus></label></div>`
@@ -93,7 +93,7 @@ export default {
       <div class="row2"><p>${sum.temp ? sum.temp + '° · ' : ''}${p && p.target_weight ? '→ ' + fmt.n(p.target_weight) + ' g · ' : ''}${sum.steps} steps${hasLast ? ` · <span style="color:var(--muted)">Last pulled ${fmt.ago(last.when)}</span>` : ''}</p>
         <nav class="acts" aria-label="Profile actions"><button type="button" class="line line-on" data-act="copy">Edit a copy</button><button type="button" class="line line-on" data-act="fav">${tags.includes('favourite') ? 'Unfavourite' : 'Favourite'}</button><button type="button" class="line line-on" data-act="hide">Hide</button></nav></div>
       <section class="list" aria-label="Profiles">
-        ${list === null ? '<p class="empty">Loading profiles…</p>' : l.length ? l.map((r) => `<button type="button" class="row${r.id === pickedId ? ' row-on' : ''}" aria-pressed="${r.id === pickedId}" data-act="pick" data-id="${esc(r.id)}"><span class="row-name">${esc(r.profile.title)}</span><span class="row-meta">${r.profile.target_weight ? '→ ' + fmt.n(r.profile.target_weight, 0) + ' g' : (r.profile.steps || []).length + ' steps'}</span></button>`).join('') : `<p class="empty">No profiles here yet.${filter !== 'all' ? ' Tag a profile from Create, or with Favourite above.' : ''}</p>`}
+        ${list === null ? '<p class="empty">Loading profiles…</p>' : l.length ? l.map((r) => `<button type="button" class="row${r.id === pickedId ? ' row-on' : ''}" aria-pressed="${r.id === pickedId}" data-act="pick" data-id="${esc(r.id)}"><span class="row-name">${esc(r.profile.title)}</span><span class="row-meta">${r.profile.target_weight ? '→ ' + fmt.n(r.profile.target_weight, 0) + ' g' : (r.profile.steps || []).length + ' steps'}</span></button>`).join('') : `<p class="empty">No profiles here yet.${filter !== 'all' ? ' Tag a profile with Favourite above, or when you make one with New.' : ''}</p>`}
       </section>
       <section class="right3">
         <figure style="margin:12px 0 0 -60px">${p ? graph({ height: 381, B: 337, xMax, tempLo: lo, series, marks: c.marks, bands, lines: hasLast ? [{ t: last.series.end, dash: true, end: true, label: `Last shot${last.series.pts.length && last.series.pts[last.series.pts.length - 1].w ? ' stopped at ' + fmt.n(last.series.pts[last.series.pts.length - 1].w) + ' g' : ''}` }] : [], aria: 'Profile preview' }) : ''}</figure>
@@ -113,6 +113,7 @@ export default {
     else if (a === 'use') { await patchWorkflow({ profile: sel.profile }); toast(`${sel.profile.title} loaded`); go('shot'); }
     else if (a === 'fav') { const t = tagsOf(sel); await setTags(sel, t.includes('favourite') ? t.filter((x) => x !== 'favourite') : [...t, 'favourite']); }
     else if (a === 'copy') { go('create', sel); }
+    else if (a === 'new') { go('create', 'new'); }
     else if (a === 'hide') { await api.put(`/api/v1/profiles/${encodeURIComponent(sel.id)}/visibility`, { visibility: 'hidden' }); toast(`${sel.profile.title} hidden`); pickedId = null; await loadProfiles(true); }
   },
 };

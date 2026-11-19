@@ -2,7 +2,7 @@
 
 A custom skin for [Decaid](https://github.com/decentespresso/decaid), Decent's companion app for the DE1 espresso machine. It is built for a 1280×800 Android tablet in landscape, in a light, open style with no boxed cards.
 
-Tabs: **Pull a shot**, **Profiles**, **Create**, **H2O** (steam, hot water, flush), **Beans**, **History** and **Settings** (gear icon).
+Tabs: **Pull a shot**, **Profiles** (with **New** and **Edit a copy** to make your own), **H2O** (steam, hot water, flush), **Beans**, **History** and **Settings** (gear icon).
 
 Graph colours are fixed everywhere: red is temperature, green is pressure, blue is flow, and dotted brown is weight flow.
 

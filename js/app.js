@@ -12,7 +12,7 @@ import settings from './pages/settings.js';
 const PAGES = [
   ['shot', 'Pull a shot', 'cup', shot],
   ['profiles', 'Profiles', 'list', profiles],
-  ['create', 'Create', 'pencil', create],
+  ['create', 'Create', 'pencil', create, 'profiles'],
   ['h2o', 'H2O', 'drop', h2o],
   ['beans', 'Beans', 'bean', beans],
   ['history', 'History', 'clock', historyPage],
@@ -34,7 +34,7 @@ export function go(id, arg) {
   current = entry[3];
   current.repaint = paint;
   if (location.hash.slice(1) !== entry[0]) history.replaceState(null, '', '#' + entry[0]);
-  renderNav(entry[0]);
+  renderNav(entry[4] || entry[0]);
   pageEl.className = current.wide ? 'main main-3' : 'main';
   if (current.enter) current.enter(arg);
   paint();
@@ -50,7 +50,7 @@ export function paint() {
 }
 
 function renderNav(active) {
-  nav.innerHTML = PAGES.map(([id, label, ic]) => {
+  nav.innerHTML = PAGES.filter((p) => !p[4]).map(([id, label, ic]) => {
     const on = id === active;
     const cur = on ? ' aria-current="page"' : '';
     if (id === 'settings') return `<a class="tab tab-icon${on ? ' tab-on' : ''}" href="#settings" aria-label="Settings"${cur}>${icon(ic, 22)}</a>`;
