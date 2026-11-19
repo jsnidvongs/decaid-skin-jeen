@@ -27,7 +27,7 @@ export const S = {
 };
 
 // The DE1 tank reads in mm. This is roughly full; used only to show a percentage.
-export const WATER_FULL_MM = 50;
+export const WATER_FULL_MM = 65; // Jeen's tank: 2 L at 65 mm
 
 export const machineState = () => (S.machine && S.machine.state && S.machine.state.state) || 'disconnected';
 export const machineSub = () => (S.machine && S.machine.state && S.machine.state.substate) || '';

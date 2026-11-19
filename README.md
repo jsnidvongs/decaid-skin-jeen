@@ -53,7 +53,7 @@ To point the skin at a real tablet from your computer, add `?api=http://<tablet-
 
 ## Known limits
 
-- Water level comes from Decaid in millimetres. The skin shows it as a percentage, assuming a full tank is about 50 mm (`WATER_FULL_MM` in `js/store.js`).
+- Water level comes from Decaid in millimetres. The skin shows it as a percentage, where a full 2 L tank reads 65 mm (`WATER_FULL_MM` in `js/store.js`).
 - Profile tags (favourite, modern, classic) are stored in each profile's metadata in Decaid.
 - "This week" in History and the bean averages are worked out by the skin.
 - Steam has no stop-at-temperature, because the DE1 doesn't support it.
