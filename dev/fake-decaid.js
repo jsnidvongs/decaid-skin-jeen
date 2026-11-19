@@ -256,6 +256,7 @@ function route(method, url, body) {
     case 'GET /api/v1/devices/wifi': return R(200, []);
     case 'GET /api/v1/plugins': return R(200, [{ id: 'visualizer.reaplugin', name: 'Visualizer', version: '1.4.0' }, { id: 'settings.reaplugin', name: 'Settings', version: '1.0.0' }]);
     case 'GET /api/v1/info': return R(200, { version: '0.0.0-fake', fullVersion: 'fake Decaid for testing' });
+    case 'POST /api/v1/machine/heartbeat': return R(200, { timeoutRemaining: 1800 });
     case 'GET /api/v1/grinders': return R(200, grinders);
     case 'POST /api/v1/grinders': { if (!body || !body.model) return R(400, { error: 'model is required' }); const g = { id: uid(), archived: false, settingType: 'numeric', createdAt: now(), updatedAt: now(), ...body }; grinders.push(g); return R(201, g); }
     case 'GET /api/v1/profiles': return R(200, profiles.filter((r) => r.visibility !== 'deleted'));

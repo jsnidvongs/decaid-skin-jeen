@@ -62,7 +62,7 @@ function stateLabel() {
   const st = machineState();
   return ({ idle: ['Ready', 'ok'], heating: ['Heating', 'bad'], preheating: ['Heating', 'bad'], sleeping: ['Asleep', 'idle'], espresso: ['Pouring', 'ok'],
     steam: ['Steaming', 'ok'], hotWater: ['Hot water', 'ok'], flush: ['Flushing', 'ok'], needsWater: ['Refill', 'bad'], error: ['Error', 'bad'],
-    disconnected: ['No machine', 'bad'], booting: ['Starting', 'idle'], busy: ['Busy', 'idle'], cleaning: ['Cleaning', 'ok'], descaling: ['Descaling', 'ok'],
+    disconnected: ['No DE1', 'bad'], booting: ['Starting', 'idle'], busy: ['Busy', 'idle'], cleaning: ['Cleaning', 'ok'], descaling: ['Descaling', 'ok'],
     airPurge: ['Air purge', 'ok'], fwUpgrade: ['Updating', 'idle'] })[st] || [st, 'ok'];
 }
 
@@ -81,9 +81,9 @@ function renderStatus() {
   const g = m ? m.groupTemperature.toFixed(1) : null;
   const items = [
     ['ready', esc(ready), ready, rs],
-    ['group', g ? `Group <span class="num">${g}</span>°` : 'Group –', g ? `Group ${g}°` : 'Group unknown', !m ? 'idle' : heating() ? 'bad' : 'ok'],
-    ['water', pct == null ? 'Water –' : `Water <span class="num">${pct}</span>%`, pct == null ? 'Water unknown' : `Water ${pct}%`, pct == null ? 'idle' : waterLow() ? 'bad' : 'ok'],
-    S.scale.connected ? ['scale', `Scale <span class="num">${scaleReading()}</span> g`, `Scale ${scaleReading()} g`, 'ok'] : ['scale', 'No scale', 'No scale', 'bad'],
+    ['group', g ? `Group <span class="num">${g}°</span>` : 'Group –', g ? `Group ${g}°` : 'Group unknown', !m ? 'idle' : heating() ? 'bad' : 'ok'],
+    ['water', pct == null ? 'Water –' : `Water <span class="num">${pct}%</span>`, pct == null ? 'Water unknown' : `Water ${pct}%`, pct == null ? 'idle' : waterLow() ? 'bad' : 'ok'],
+    S.scale.connected ? ['scale', `Scale <span class="num">${scaleReading()} g</span>`, `Scale ${scaleReading()} g`, 'ok'] : ['scale', 'No scale', 'No scale', 'bad'],
   ];
   for (const [k, html, label, st] of items) {
     const e = statEls[k];
@@ -100,13 +100,22 @@ function renderOffline() {
   offEl.innerHTML = `<span class="eyebrow">Connecting</span><h1>Looking for Decaid at ${esc(BASE)}</h1><p>Make sure the Decaid app is open on the tablet. If you are testing on another computer, add <b>?api=http://TABLET-IP:8080</b> to this page's address.</p>`;
 }
 
+// Any touch or the tablet screen coming back on wakes the DE1 and tells Decaid someone is here.
+let lastPresence = 0;
+function presence() {
+  if (machineState() === 'sleeping') api.setState('idle').then(() => toast('Waking the machine')).catch(() => {});
+  if (Date.now() - lastPresence > 30000) { lastPresence = Date.now(); api.post('/api/v1/machine/heartbeat').catch(() => {}); }
+}
+window.addEventListener('pointerdown', presence, { capture: true });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') presence(); });
+
 // One click handler for every page: elements carry data-act="name".
 root.addEventListener('click', async (ev) => {
   const st = ev.target.closest('[data-stat]');
   if (st) {
     const k = st.dataset.stat;
     try {
-      if (k === 'ready' && machineState() === 'sleeping') { await api.setState('idle'); toast('Waking the machine'); }
+      if (k === 'ready') { /* waking is handled by presence() */ }
       else if (k === 'scale' && S.scale.connected) { await api.tare(); toast('Scale tared'); }
       else if (k === 'scale') go('settings', 'Scale');
       else if (k === 'water') go('settings', 'Machine');

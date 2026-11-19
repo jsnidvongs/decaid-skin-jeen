@@ -78,6 +78,7 @@ function rowsFor(g) {
     case 'About': {
       const i = D.info || {}, mi = D.minfo || {};
       return [row('This skin', 'Jeen’s skin 0.1.0'), row('Decaid', esc(i.fullVersion || i.version || '–')), row('Machine', esc([mi.model, mi.firmwareVersion || mi.version].filter(Boolean).join(' · ') || '–')),
+        row('Screen size the skin sees', `${window.innerWidth} × ${window.innerHeight}`),
         row('Decaid’s own screens', '', btn('dashboard', 'Open dashboard'))];
     }
     default: return [];

@@ -79,7 +79,7 @@ function readyView() {
     <div class="row2"><p>${sum.temp ? sum.temp + '° · ' : ''}${fmt.n(c0.targetDoseWeight || 0)} → ${saw ? fmt.n(yieldG) + ' g' : 'no target'} · ${sum.steps} steps</p><nav class="acts" aria-label="Shot actions"><button type="button" class="line line-on" data-act="tare">Tare scale</button></nav></div>
     <section class="list" aria-label="Shot details">
       <span class="grp">Coffee</span>
-      <div class="row row-static"><span>Bean</span><span style="display:flex;align-items:center;gap:20px;min-width:0"><span class="val" style="overflow:hidden;text-overflow:ellipsis">${bean}</span><a class="line line-on" href="#beans">Change</a></span></div>
+      <a class="row row-link" href="#beans" aria-label="Bean: change on the Beans page"><span>Bean</span><span style="display:flex;align-items:center;gap:12px;min-width:0"><span class="val" style="overflow:hidden;text-overflow:ellipsis">${bean}</span><span aria-hidden="true" style="color:var(--muted);font-size:20px;line-height:1">›</span></span></a>
       ${rows([['Roasted', `<span class="val">${roasted}</span>`], ['Grinder', stepper('grind', c0.grinderSetting || '–', 'Finer', 'Coarser')]])}
       <span class="grp">Recipe</span>
       ${rows([['Dose', stepper('dose', fmt.n(c0.targetDoseWeight || 0) + ' g', 'Less coffee', 'More coffee')], ['Yield', stepper('yield', saw ? fmt.n(yieldG) + ' g' : 'Off', 'Less', 'More')], ['Temperature', `<span class="val">${sum.temp ? sum.temp + '°' : '–'}</span>`]])}
