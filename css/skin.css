@@ -24,12 +24,13 @@ a{color:var(--ink)}
 .status{margin:0;padding:0;list-style:none;display:flex;gap:12px}
 .stat{display:inline-flex;align-items:flex-end;gap:8px;min-height:44px;padding:0 0 10px;background:none;border:0;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink);line-height:1;white-space:nowrap;cursor:pointer}
 .dot{position:relative;flex:none;width:8px;height:8px;margin-bottom:2px;border-radius:50%;background:var(--ok)}
-.dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:inherit;animation:pulse 2s ease-out infinite}
+.dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:inherit;animation:pulse 4s ease-in-out infinite}
+.stat-num{display:inline-block;min-width:5.6ch;text-align:right;font-variant-numeric:tabular-nums}
 .dot-off{background:var(--red)}
-.dot-off::after{animation-duration:1s}
+.dot-off::after{animation-duration:3s}
 .dot-idle{background:#b8b8b8}
 .dot-idle::after{animation:none}
-@keyframes pulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.8);opacity:0}}
+@keyframes pulse{0%{transform:scale(1);opacity:0}40%{opacity:.35}100%{transform:scale(2.2);opacity:0}}
 @media (prefers-reduced-motion:reduce){.dot::after{animation:none}}
 
 /* page grid */

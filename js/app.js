@@ -66,6 +66,12 @@ function stateLabel() {
     airPurge: ['Air purge', 'ok'], fwUpgrade: ['Updating', 'idle'] })[st] || [st, 'ok'];
 }
 
+function scaleReading() {
+  const w = Math.round((S.scale.weight || 0) * 10) / 10;
+  return (w < 0 ? '-' : '') + Math.abs(w).toFixed(1).padStart(4, '0');
+}
+const statText = (k, label) => k === 'scale' && S.scale.connected ? `Scale <span class="stat-num">${esc(scaleReading())}</span> g` : esc(label);
+
 function renderStatus() {
   const m = S.machine;
   const [ready, rs] = stateLabel();
@@ -74,9 +80,9 @@ function renderStatus() {
     ['ready', ready, rs],
     ['group', m ? `Group ${m.groupTemperature.toFixed(1)}°` : 'Group –', !m ? 'idle' : heating() ? 'bad' : 'ok'],
     ['water', pct == null ? 'Water –' : `Water ${pct}%`, pct == null ? 'idle' : waterLow() ? 'bad' : 'ok'],
-    ['scale', S.scale.connected ? `Scale ${(S.scale.weight || 0).toFixed(1)} g` : 'No scale', S.scale.connected ? 'ok' : 'bad'],
+    ['scale', S.scale.connected ? `Scale ${scaleReading()} g` : 'No scale', S.scale.connected ? 'ok' : 'bad'],
   ];
-  statusEl.innerHTML = items.map(([k, label, st]) => `<li><button type="button" class="stat" data-stat="${k}" aria-label="${esc(label)}${st === 'bad' ? ', needs attention' : ''}">${esc(label)}<span class="dot${st === 'bad' ? ' dot-off' : st === 'idle' ? ' dot-idle' : ''}" aria-hidden="true"></span></button></li>`).join('');
+  statusEl.innerHTML = items.map(([k, label, st]) => `<li><button type="button" class="stat" data-stat="${k}" aria-label="${esc(label)}${st === 'bad' ? ', needs attention' : ''}">${statText(k, label)}<span class="dot${st === 'bad' ? ' dot-off' : st === 'idle' ? ' dot-idle' : ''}" aria-hidden="true"></span></button></li>`).join('');
 }
 
 function renderOffline() {
