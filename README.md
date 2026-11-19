@@ -8,10 +8,11 @@ Graph colours are fixed everywhere: red is temperature, green is pressure, blue 
 
 ## Install on the tablet
 
-1. Open Decaid on the tablet.
-2. Go to the skins settings and choose **Install from GitHub**.
-3. Enter the repo `jsnidvongs/decaid-skin-jeen` and the branch `main`.
-4. Pick **Jeen's skin** as the active skin.
+1. From any skin, press Android's Back button (or swipe in from the edge) to reach Decaid's dashboard.
+2. Tap **Skins** (palette icon). The "Web Interface" page opens.
+3. Tap the gear icon at the top right, then **Install skin**, then **GitHub Branch**.
+4. Repository `jsnidvongs/decaid-skin-jeen`, branch `main`, then **Install**.
+5. Pick **Jeen's skin** in the list.
 
 The same thing through Decaid's API, from any computer on the same network:
 
