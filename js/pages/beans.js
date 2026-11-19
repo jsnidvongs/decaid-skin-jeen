@@ -149,7 +149,7 @@ function isoDate(v) {
   if (!m) return null;
   const iso = `20${m[3]}-${m[2]}-${m[1]}`;
   const d = new Date(iso + 'T12:00:00');
-  return !isNaN(d) && d.getDate() === +m[1] ? iso : null;
+  return !isNaN(d) && d.getDate() === +m[1] ? `${iso}T00:00:00Z` : null;
 }
 const dateFld = () => `<label class="fld"><span class="eyebrow">Roast date</span><input data-in="roastDate" value="${esc(form.roastDate || '')}" placeholder="DD-MM-YY" inputmode="numeric" maxlength="8" autocomplete="off"></label>`;
 

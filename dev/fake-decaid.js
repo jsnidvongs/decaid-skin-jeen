@@ -251,6 +251,12 @@ function route(method, url, body) {
     case 'POST /api/v1/settings': merge(rea, body); return R(200, rea);
     case 'GET /api/v1/display': return R(200, display);
     case 'PUT /api/v1/display/brightness': display.brightness = display.requestedBrightness = body.brightness; return R(200, display);
+    case 'PUT /api/v1/devices/connect':
+    case 'PUT /api/v1/devices/disconnect': {
+      const on = p.endsWith('/connect');
+      if (body && body.deviceId === 'AA:BB:CC:DD:EE:FF') { scaleOn = on; broadcast('scale', { status: on ? 'connected' : 'disconnected' }); }
+      return R(200, { deviceId: body && body.deviceId, state: on ? 'connected' : 'disconnected' });
+    }
     case 'GET /api/v1/devices': return R(200, [{ name: 'DE1', id: 'F4:12:FA:5C:3D:8E', state: 'connected', type: 'machine' }, { name: 'Decent Scale', id: 'AA:BB:CC:DD:EE:FF', state: scaleOn ? 'connected' : 'disconnected', type: 'scale' }]);
     case 'GET /api/v1/devices/scan': return R(200, []);
     case 'GET /api/v1/devices/wifi': return R(200, []);
