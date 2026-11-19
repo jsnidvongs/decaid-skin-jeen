@@ -104,13 +104,25 @@ export function graph({ height = 360, B, T = 40, xMax = 40, tempLo, series = [],
   const ticks = xMax <= 40 ? 10 : xMax <= 80 ? 20 : 30;
   for (let s = 0; s <= xMax + 0.01; s += ticks) o.push(`<text x="${X(s)}" y="${B + 18}" font-size="12" text-anchor="middle">${s}</text>`);
   o.push(`<text x="386" y="${B + 34}" font-size="11" letter-spacing="0.18em" text-anchor="middle">TIME, SECONDS</text>`);
-  let lastLabelX = -999;
+  const laneEnd = [-999, -999];
+  const nameW = (t) => t.length * 6.8;
+  const valW = (t) => t.length * 5.2;
   marks.forEach((m, i) => {
     const x = X(m.t);
     if (i) o.push(`<line x1="${x}" y1="${T}" x2="${x}" y2="${B}" stroke="#7c7c7c" stroke-dasharray="6 4"/>`);
-    if (x - lastLabelX < 46 || x > 700) return;
-    lastLabelX = x;
-    o.push(`<text x="${x + 4}" y="14" font-size="10" letter-spacing="0.14em">${esc((m.name || '').toUpperCase().slice(0, 12))}</text><text x="${x + 4}" y="29" font-size="11" fill="#4a4a4a">${esc(m.label || '')}</text>`);
+    if (x > 708) return;
+    const name = (m.name || '').toUpperCase().slice(0, 12), val = m.label || '';
+    const tries = [[name, val], [name, ''], [name.slice(0, 5), ''], [String(i + 1), '']];
+    for (const [n, v] of tries) {
+      const w = nameW(n) + (v ? 6 + valW(v) : 0);
+      const lane = laneEnd.findIndex((end) => x + 4 >= end + 10);
+      if (lane < 0) break;
+      const left = Math.min(x + 4, 776 - w);
+      if (left < laneEnd[lane] + 10) continue;
+      laneEnd[lane] = left + w;
+      o.push(`<text x="${left}" y="${lane ? 30 : 14}" font-size="10"><tspan letter-spacing="0.14em">${esc(n)}</tspan>${v ? `<tspan dx="6" font-size="11" fill="#4a4a4a">${esc(v)}</tspan>` : ''}</text>`);
+      break;
+    }
   });
   for (const l of lines) {
     const x = X(l.t);
