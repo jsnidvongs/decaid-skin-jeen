@@ -80,7 +80,7 @@ function readyView() {
     <section class="list list-tight" aria-label="Shot details">
       <span class="grp">Coffee</span>
       <a class="row row-link" href="#beans" aria-label="Bean: change on the Beans page"><span>Bean</span><span style="display:flex;align-items:center;gap:12px;min-width:0"><span class="val" style="overflow:hidden;text-overflow:ellipsis">${bean}</span><span aria-hidden="true" style="color:var(--muted);font-size:20px;line-height:1">›</span></span></a>
-      ${rows([['Roasted', `<span class="val">${roasted}</span>`], ['Grinder', grindStepper(grindValue(c0.grinderSetting) || '')]])}
+      ${rows([['Roasted', `<span class="val">${roasted}</span>`], ['Grind size', grindStepper(grindValue(c0.grinderSetting) || '')]])}
       <span class="grp">Recipe</span>
       ${rows([['Dose', stepper('dose', fmt.n(c0.targetDoseWeight || 0) + ' g', 'Less coffee', 'More coffee')], ['Yield', stepper('yield', saw ? fmt.n(yieldG) + ' g' : 'Off', 'Less', 'More')], ['Temperature', `<span class="val">${sum.temp ? sum.temp + '°' : '–'}</span>`]])}
     </section>
