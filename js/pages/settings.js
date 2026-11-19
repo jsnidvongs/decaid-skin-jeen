@@ -17,6 +17,7 @@ const GROUPS = [
 let picked = 'Scale';
 const D = {};         // loaded data per group
 let armed = null;     // maintenance action waiting for a second tap
+let addingGrinder = false, gform = {};
 
 async function load(group) {
   const get = (p) => api.get(p).catch(() => null);
@@ -41,7 +42,9 @@ function rowsFor(g) {
       const list = D.grinders || [];
       return [row('In use', esc(ctx().grinderModel || 'None chosen')), row('Current setting', esc(ctx().grinderSetting || '–'), stepper('grind', '', 'Finer', 'Coarser').replace('<span></span>', ''))]
         .concat(list.map((x) => row(esc(x.model || 'Grinder'), esc(x.burrs || ''), x.id === ctx().grinderId ? '<span class="eyebrow">In use</span>' : btn('usegrinder', 'Use', `data-id="${esc(x.id)}"`))))
-        .concat(list.length ? [] : ['<p class="empty">No grinders saved yet. Add one in Decaid’s own Beans and equipment screen; it will show up here.</p>']);
+        .concat(addingGrinder
+          ? [`<div class="row row-static" style="gap:24px;align-items:flex-end;padding-bottom:12px"><label class="fld" style="flex:1"><span class="eyebrow">Model</span><input data-in="g.model" value="${esc(gform.model || '')}" placeholder="Niche Zero" autofocus></label><label class="fld" style="flex:1"><span class="eyebrow">Burrs, optional</span><input data-in="g.burrs" value="${esc(gform.burrs || '')}" placeholder="63 mm conical"></label><span style="display:flex;gap:28px">${btn('cancelgrinder', 'Cancel')}${btn('savegrinder', 'Save')}</span></div>`]
+          : [row(list.length ? 'Add another grinder' : 'No grinders saved yet', '', btn('addgrinder', 'Add a grinder'))]);
     }
     case 'Machine': return [
       row('Fan turns on above', `${m.fan != null ? m.fan + '°' : '–'}`, stepper('fan', '', 'Lower', 'Higher').replace('<span></span>', '')),
@@ -97,12 +100,24 @@ export default {
       <nav class="list" aria-label="Settings groups">${GROUPS.map(([name, ic]) => `<button type="button" class="row${name === picked ? ' row-on' : ''}" aria-pressed="${name === picked}" data-act="group" data-val="${esc(name)}"><span class="row-ic">${icon(ic)}<span class="row-name">${esc(name)}</span></span><span class="row-meta">${esc(hint[name] || '')}</span></button>`).join('')}</nav>
       <section class="list" aria-label="${esc(g[0])}" style="border-bottom:0">${rows.join('')}</section>`;
   },
+  input(name, el) { if (name.startsWith('g.')) gform[name.slice(2)] = el.value; },
   async act(a, el) {
     const dir = +el.dataset.dir || 0;
     const m = D.machine || {};
     const postMachine = async (body) => { await api.post('/api/v1/machine/settings', body); await load('Machine'); };
     const postRea = async (body) => { D.rea = await api.post('/api/v1/settings', body).catch(async () => api.get('/api/v1/settings')); notify(); };
-    if (a === 'group') { picked = el.dataset.val; armed = null; this.repaint(); load(picked); }
+    if (a === 'group') { picked = el.dataset.val; armed = null; addingGrinder = false; this.repaint(); load(picked); }
+    else if (a === 'addgrinder') { addingGrinder = true; gform = {}; this.repaint(); }
+    else if (a === 'cancelgrinder') { addingGrinder = false; this.repaint(); }
+    else if (a === 'savegrinder') {
+      const model = (gform.model || '').trim();
+      if (!model) { toast('Type the grinder model first'); return; }
+      const g = await api.post('/api/v1/grinders', { model, burrs: (gform.burrs || '').trim() || null });
+      addingGrinder = false;
+      if (g && g.id) await patchWorkflow({ context: { grinderId: g.id, grinderModel: g.model, grinderBurrs: g.burrs || null } });
+      toast(`${model} added and in use`);
+      await load('Grinder');
+    }
     else if (a === 'grind') { const v = parseFloat(ctx().grinderSetting); if (isNaN(v)) { toast('Type a setting in Decaid first'); return; } await patchWorkflow({ context: { grinderSetting: String(Math.round((v + dir * 0.5) * 10) / 10) } }); }
     else if (a === 'usegrinder') { const g = (D.grinders || []).find((x) => x.id === el.dataset.id); await patchWorkflow({ context: { grinderId: g.id, grinderModel: g.model, grinderBurrs: g.burrs || null } }); }
     else if (a === 'fan') await postMachine({ fan: Math.max(0, Math.min(60, (m.fan || 50) + dir * 5)) });
@@ -118,7 +133,7 @@ export default {
     else if (a === 'disconnect') { await api.put('/api/v1/devices/disconnect', { deviceId: el.dataset.id }); await load('Devices'); }
     else if (a === 'maint') { const s = el.dataset.val; if (armed !== s) { armed = s; this.repaint(); return; } armed = null; await api.setState(s); toast('Started'); this.repaint(); }
     else if (a === 'bright') { const d = D.display || {}; const cur = d.requestedBrightness != null ? d.requestedBrightness : 70; D.display = await api.put('/api/v1/display/brightness', { brightness: Math.max(5, Math.min(100, cur + dir * 10)) }); notify(); }
-    else if (a === 'sleep') { await api.setState('sleep'); toast('Machine going to sleep'); }
+    else if (a === 'sleep') { await api.setState('sleeping'); toast('Machine going to sleep'); }
     else if (a === 'dashboard') { if (window.decentApp && window.decentApp.exitToDashboard) window.decentApp.exitToDashboard(); else toast('Only works inside the Decaid app'); }
   },
 };

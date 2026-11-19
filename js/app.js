@@ -70,19 +70,28 @@ function scaleReading() {
   const w = Math.round((S.scale.weight || 0) * 10) / 10;
   return (w < 0 ? '-' : '') + Math.abs(w).toFixed(1).padStart(4, '0');
 }
-const statText = (k, label) => k === 'scale' && S.scale.connected ? `Scale <span class="stat-num">${esc(scaleReading())}</span> g` : esc(label);
+const STATS = ['ready', 'group', 'water', 'scale'];
+statusEl.innerHTML = STATS.map((k) => `<li><button type="button" class="stat stat-${k}" data-stat="${k}"><span class="stat-txt"></span><span class="dot" aria-hidden="true"></span></button></li>`).join('');
+const statEls = Object.fromEntries(STATS.map((k) => { const b = statusEl.querySelector(`[data-stat="${k}"]`); return [k, { b, txt: b.firstChild, dot: b.lastChild, html: null, st: null }]; }));
 
 function renderStatus() {
   const m = S.machine;
   const [ready, rs] = stateLabel();
   const pct = waterPct();
+  const g = m ? m.groupTemperature.toFixed(1) : null;
   const items = [
-    ['ready', ready, rs],
-    ['group', m ? `Group ${m.groupTemperature.toFixed(1)}°` : 'Group –', !m ? 'idle' : heating() ? 'bad' : 'ok'],
-    ['water', pct == null ? 'Water –' : `Water ${pct}%`, pct == null ? 'idle' : waterLow() ? 'bad' : 'ok'],
-    ['scale', S.scale.connected ? `Scale ${scaleReading()} g` : 'No scale', S.scale.connected ? 'ok' : 'bad'],
+    ['ready', esc(ready), ready, rs],
+    ['group', g ? `Group <span class="num">${g}</span>°` : 'Group –', g ? `Group ${g}°` : 'Group unknown', !m ? 'idle' : heating() ? 'bad' : 'ok'],
+    ['water', pct == null ? 'Water –' : `Water <span class="num">${pct}</span>%`, pct == null ? 'Water unknown' : `Water ${pct}%`, pct == null ? 'idle' : waterLow() ? 'bad' : 'ok'],
+    S.scale.connected ? ['scale', `Scale <span class="num">${scaleReading()}</span> g`, `Scale ${scaleReading()} g`, 'ok'] : ['scale', 'No scale', 'No scale', 'bad'],
   ];
-  statusEl.innerHTML = items.map(([k, label, st]) => `<li><button type="button" class="stat" data-stat="${k}" aria-label="${esc(label)}${st === 'bad' ? ', needs attention' : ''}">${statText(k, label)}<span class="dot${st === 'bad' ? ' dot-off' : st === 'idle' ? ' dot-idle' : ''}" aria-hidden="true"></span></button></li>`).join('');
+  for (const [k, html, label, st] of items) {
+    const e = statEls[k];
+    if (e.html !== html) { e.txt.innerHTML = html; e.html = html; }
+    if (e.st !== st) { e.dot.className = 'dot' + (st === 'bad' ? ' dot-off' : st === 'idle' ? ' dot-idle' : ''); e.st = st; }
+    const aria = label + (st === 'bad' ? ', needs attention' : '');
+    if (e.b.getAttribute('aria-label') !== aria) e.b.setAttribute('aria-label', aria);
+  }
 }
 
 function renderOffline() {

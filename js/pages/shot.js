@@ -72,7 +72,7 @@ function readyView() {
   const ctaLabel = low ? 'Refill water' : hot ? `Heating, ${Math.round(heatProgress() * 100)}%` : 'Start shot';
   const ctaCls = 'cta cta-big' + (blocked ? ' cta-off' : '') + (hot && !low ? ' cta-heat' : '');
   const bean = c0.coffeeName ? `${esc(c0.coffeeName)}${c0.coffeeRoaster ? `<span style="color:var(--muted)"> · ${esc(c0.coffeeRoaster)}</span>` : ''}` : '<span style="color:var(--muted)">None chosen</span>';
-  const roasted = batch && batch.roastDate ? `${fmt.day(batch.roastDate)}, ${fmt.ago(batch.roastDate)}` : '–';
+  const roasted = batch && batch.roastDate ? `${fmt.dmy(batch.roastDate)}, ${fmt.ago(batch.roastDate)}` : '–';
   return `
     ${head('Next shot', '<a class="line" href="#profiles">Change profile</a>', esc(p && p.author ? p.author : 'Profile'), p ? p.title : 'No profile loaded', p && p.notes ? p.notes.slice(0, 150) : 'The machine’s own button also starts the shot.')}
     <div class="row2"><span class="eyebrow" style="padding-bottom:10px">Stop at weight</span><span style="display:flex;align-items:center;gap:16px">${saw ? `<span class="val">${fmt.n(yieldG)} g</span>` : '<span class="val" style="color:var(--faint)">Off</span>'}${sw('saw', saw, 'Stop at weight')}</span></div>

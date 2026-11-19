@@ -228,11 +228,11 @@ function route(method, url, body) {
   }
   if (p.startsWith('/api/v1/machine/state/') && method === 'PUT') {
     const s = seg[2];
+    if (!['booting','busy','idle','sleeping','heating','preheating','espresso','hotWater','flush','steam','steamRinse','skipStep','cleaning','descaling','calibration','selfTest','airPurge','needsWater','error','fwUpgrade'].includes(s)) return R(400, { error: `Unknown machine state: ${s}` });
     if (s === 'espresso') { if (rea.blockOnNoScale && !scaleOn) return R(409, { error: 'No scale connected' }); startEspresso(); }
     else if (s === 'idle') { if (run && run.kind === 'espresso') finishEspresso('apiStop'); run = null; state = 'idle'; }
     else if (s === 'skipStep') { if (run && run.kind === 'espresso') { const ft = frameTargets(workflow.profile, (Date.now() - run.t0) / 1000 + run.skip); if (ft) run.skip += ft.s.seconds - ft.into + 0.01; } }
     else if (['steam', 'hotWater', 'flush'].includes(s)) { run = { kind: s, t0: Date.now() }; state = s; if (s === 'hotWater') weight = 0; }
-    else if (s === 'sleep') { state = 'sleeping'; }
     else state = s;
     return R(200, { state });
   }
@@ -257,6 +257,7 @@ function route(method, url, body) {
     case 'GET /api/v1/plugins': return R(200, [{ id: 'visualizer.reaplugin', name: 'Visualizer', version: '1.4.0' }, { id: 'settings.reaplugin', name: 'Settings', version: '1.0.0' }]);
     case 'GET /api/v1/info': return R(200, { version: '0.0.0-fake', fullVersion: 'fake Decaid for testing' });
     case 'GET /api/v1/grinders': return R(200, grinders);
+    case 'POST /api/v1/grinders': { if (!body || !body.model) return R(400, { error: 'model is required' }); const g = { id: uid(), archived: false, settingType: 'numeric', createdAt: now(), updatedAt: now(), ...body }; grinders.push(g); return R(201, g); }
     case 'GET /api/v1/profiles': return R(200, profiles.filter((r) => r.visibility !== 'deleted'));
     case 'POST /api/v1/profiles': { const rec = { id: hash(body.profile), profile: body.profile, parentId: body.parentId || null, visibility: 'visible', isDefault: false, createdAt: now(), updatedAt: now(), metadata: body.metadata || {} }; const i = profiles.findIndex((r) => r.id === rec.id); if (i >= 0) profiles[i] = rec; else profiles.push(rec); return R(201, rec); }
     case 'GET /api/v1/beans': return R(200, beans.filter((b) => q.includeArchived === 'true' || !b.archived));

@@ -53,6 +53,7 @@ export const fmt = {
     if (d.toDateString() === y.toDateString()) return 'Yesterday';
     return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }); },
   time: (ts) => new Date(ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+  dmy: (ts) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(ts || '')); if (m) return `${m[3]}-${m[2]}-${m[1].slice(2)}`; const d = new Date(ts); return isNaN(d) ? '' : [d.getDate(), d.getMonth() + 1, d.getFullYear() % 100].map((n) => String(n).padStart(2, '0')).join('-'); },
   ago: (ts) => { const days = Math.floor((Date.now() - Date.parse(ts)) / 86400000); return days <= 0 ? 'today' : days === 1 ? 'yesterday' : days + ' days ago'; },
 };
 
