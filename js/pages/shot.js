@@ -1,7 +1,7 @@
 // Pull a shot: ready, pouring and done.
 import { S, machineState, heating, heatProgress, waterLow, patchWorkflow, refreshWorkflow, notify } from '../store.js';
 import { api } from '../api.js';
-import { esc, graph, legend, profileCurves, profileSummary, tempWindow, stepper, sw, fmt, toast, COLORS } from '../ui.js';
+import { esc, graph, legend, profileCurves, profileSummary, tempWindow, stepper, sw, fmt, toast, COLORS, grindStepper, grindValue } from '../ui.js';
 
 let dismissed = null;      // the finished shot the user has moved on from
 let rating = 0;
@@ -77,10 +77,10 @@ function readyView() {
     ${head('Next shot', '<a class="line" href="#profiles">Change profile</a>', esc(p && p.author ? p.author : 'Profile'), p ? p.title : 'No profile loaded', p && p.notes ? p.notes.slice(0, 150) : 'The machine’s own button also starts the shot.')}
     <div class="row2"><span class="eyebrow" style="padding-bottom:10px">Stop at weight</span><span style="display:flex;align-items:center;gap:16px">${saw ? `<span class="val">${fmt.n(yieldG)} g</span>` : '<span class="val" style="color:var(--faint)">Off</span>'}${sw('saw', saw, 'Stop at weight')}</span></div>
     <div class="row2"><p>${sum.temp ? sum.temp + '° · ' : ''}${fmt.n(c0.targetDoseWeight || 0)} → ${saw ? fmt.n(yieldG) + ' g' : 'no target'} · ${sum.steps} steps</p><nav class="acts" aria-label="Shot actions"><button type="button" class="line line-on" data-act="tare">Tare scale</button></nav></div>
-    <section class="list" aria-label="Shot details">
+    <section class="list list-tight" aria-label="Shot details">
       <span class="grp">Coffee</span>
       <a class="row row-link" href="#beans" aria-label="Bean: change on the Beans page"><span>Bean</span><span style="display:flex;align-items:center;gap:12px;min-width:0"><span class="val" style="overflow:hidden;text-overflow:ellipsis">${bean}</span><span aria-hidden="true" style="color:var(--muted);font-size:20px;line-height:1">›</span></span></a>
-      ${rows([['Roasted', `<span class="val">${roasted}</span>`], ['Grinder', stepper('grind', c0.grinderSetting || '–', 'Finer', 'Coarser')]])}
+      ${rows([['Roasted', `<span class="val">${roasted}</span>`], ['Grinder', grindStepper(grindValue(c0.grinderSetting) || '')]])}
       <span class="grp">Recipe</span>
       ${rows([['Dose', stepper('dose', fmt.n(c0.targetDoseWeight || 0) + ' g', 'Less coffee', 'More coffee')], ['Yield', stepper('yield', saw ? fmt.n(yieldG) + ' g' : 'Off', 'Less', 'More')], ['Temperature', `<span class="val">${sum.temp ? sum.temp + '°' : '–'}</span>`]])}
     </section>
@@ -212,6 +212,13 @@ export default {
   },
   after() {},
   input(name, el) { if (name === 'note') note = el.value; },
+  async changed(name, el) {
+    if (name !== 'grindval') return;
+    const v = grindValue(el.value);
+    if (v == null) { toast('Type a number from -25 to 25'); this.repaint(); return; }
+    el.value = v;
+    await patchWorkflow({ context: { grinderSetting: v } });
+  },
   async act(a, el) {
     const c0 = ctx();
     if (a === 'start') { await api.setState('espresso'); }
@@ -226,8 +233,7 @@ export default {
     else if (a === 'yield') { await patchWorkflow({ context: { targetYield: step(c0.targetYield || lastYield, +el.dataset.dir, 1, 1, 200) } }); }
     else if (a === 'grind') {
       const cur = parseFloat(c0.grinderSetting);
-      if (isNaN(cur)) { toast('Set your grinder in Settings first'); return; }
-      await patchWorkflow({ context: { grinderSetting: String(step(cur, +el.dataset.dir, 0.5, 0, 999)) } });
+      await patchWorkflow({ context: { grinderSetting: grindValue((isNaN(cur) ? 0 : cur) + 0.1 * +el.dataset.dir) } });
     }
     else if (a === 'rate') { rating = +el.dataset.n; notify(); }
     else if (a === 'upload') {

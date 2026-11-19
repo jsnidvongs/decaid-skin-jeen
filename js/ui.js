@@ -23,6 +23,15 @@ export function icon(name, size = 20) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="${ICON[name]}"></path></svg>`;
 }
 
+export function grindStepper(value) {
+  return `<span class="step"><button type="button" data-act="grind" data-dir="-1" aria-label="Finer">−</button><input class="stepnum" data-in="grindval" value="${esc(value)}" placeholder="–" aria-label="Grinder setting, -25 to 25" enterkeyhint="done" autocomplete="off"><button type="button" data-act="grind" data-dir="1" aria-label="Coarser">+</button></span>`;
+}
+export const GRIND_MIN = -25, GRIND_MAX = 25;
+export function grindValue(v) {
+  const n = parseFloat(String(v).replace(',', '.'));
+  if (isNaN(n)) return null;
+  return (Math.round(Math.max(GRIND_MIN, Math.min(GRIND_MAX, n)) * 10) / 10).toFixed(1);
+}
 export function stepper(action, value, less = 'Less', more = 'More') {
   return `<span class="step"><button type="button" data-act="${action}" data-dir="-1" aria-label="${esc(less)}">−</button><span>${esc(value)}</span><button type="button" data-act="${action}" data-dir="1" aria-label="${esc(more)}">+</button></span>`;
 }

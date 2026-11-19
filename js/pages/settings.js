@@ -1,7 +1,7 @@
 // Settings: the groups people actually change, backed by Decaid's API.
 import { S, patchWorkflow, refreshWorkflow, notify } from '../store.js';
 import { api } from '../api.js';
-import { esc, icon, stepper, sw, fmt, toast } from '../ui.js';
+import { esc, icon, stepper, sw, fmt, toast, grindStepper, grindValue } from '../ui.js';
 
 const GROUPS = [
   ['Grinder', 'grinder', 'Your grinder. Its setting is saved with every shot.'],
@@ -40,7 +40,7 @@ function rowsFor(g) {
   switch (g) {
     case 'Grinder': {
       const list = D.grinders || [];
-      return [row('In use', esc(ctx().grinderModel || 'None chosen')), row('Current setting', esc(ctx().grinderSetting || '–'), stepper('grind', '', 'Finer', 'Coarser').replace('<span></span>', ''))]
+      return [row('In use', esc(ctx().grinderModel || 'None chosen')), row('Current setting', '-25 to 25', grindStepper(grindValue(ctx().grinderSetting) || ''))]
         .concat(list.map((x) => row(esc(x.model || 'Grinder'), esc(x.burrs || ''), x.id === ctx().grinderId ? '<span class="eyebrow">In use</span>' : btn('usegrinder', 'Use', `data-id="${esc(x.id)}"`))))
         .concat(addingGrinder
           ? [`<div class="row row-static" style="gap:24px;align-items:flex-end;padding-bottom:12px"><label class="fld" style="flex:1"><span class="eyebrow">Model</span><input data-in="g.model" value="${esc(gform.model || '')}" placeholder="Niche Zero" autofocus></label><label class="fld" style="flex:1"><span class="eyebrow">Burrs, optional</span><input data-in="g.burrs" value="${esc(gform.burrs || '')}" placeholder="63 mm conical"></label><span style="display:flex;gap:28px">${btn('cancelgrinder', 'Cancel')}${btn('savegrinder', 'Save')}</span></div>`]
@@ -102,6 +102,7 @@ export default {
       <section class="list" aria-label="${esc(g[0])}" style="border-bottom:0">${rows.join('')}</section>`;
   },
   input(name, el) { if (name.startsWith('g.')) gform[name.slice(2)] = el.value; },
+  async changed(name, el) { if (name !== 'grindval') return; const v = grindValue(el.value); if (v == null) { toast('Type a number from -25 to 25'); this.repaint(); return; } el.value = v; await patchWorkflow({ context: { grinderSetting: v } }); },
   async act(a, el) {
     const dir = +el.dataset.dir || 0;
     const m = D.machine || {};
@@ -119,7 +120,7 @@ export default {
       toast(`${model} added and in use`);
       await load('Grinder');
     }
-    else if (a === 'grind') { const v = parseFloat(ctx().grinderSetting); if (isNaN(v)) { toast('Type a setting in Decaid first'); return; } await patchWorkflow({ context: { grinderSetting: String(Math.round((v + dir * 0.5) * 10) / 10) } }); }
+    else if (a === 'grind') { const v = parseFloat(ctx().grinderSetting); await patchWorkflow({ context: { grinderSetting: grindValue((isNaN(v) ? 0 : v) + dir * 0.1) } }); }
     else if (a === 'usegrinder') { const g = (D.grinders || []).find((x) => x.id === el.dataset.id); await patchWorkflow({ context: { grinderId: g.id, grinderModel: g.model, grinderBurrs: g.burrs || null } }); }
     else if (a === 'fan') await postMachine({ fan: Math.max(0, Math.min(60, (m.fan || 50) + dir * 5)) });
     else if (a === 'steamFlow') await postMachine({ steamFlow: Math.max(0.4, Math.min(2.5, Math.round(((m.steamFlow || 1) + dir * 0.1) * 10) / 10)) });
